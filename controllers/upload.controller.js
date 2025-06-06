@@ -1,6 +1,6 @@
 import fs from "fs";
-import transcribeAudio from "../transcribe.js";
-
+// import transcribeAudio from "../transcribe.js";
+import { assemblyTranscribe } from "../assemblytranscribe.js";
 
 export const uploadFile = async (req, res) => {
   if (!req.file || !req.file.path) {
@@ -12,8 +12,10 @@ export const uploadFile = async (req, res) => {
   const filepath = req.file.path;
   const language = req.body.language || "en";
   try {
-    //TODO: Implement the transcription logic here
-    const transcript = await transcribeAudio(filepath, language);
+    // Use AssemblyAI for transcription
+    const transcript = await assemblyTranscribe(filepath, language);
+    //use OpenAI for transcription
+    // const transcript = await transcribeAudio(filepath, language);
     fs.unlinkSync(filepath); // Delete the file after processing
     res.status(200).json({
       message: "File processed successfully",
