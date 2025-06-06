@@ -1,11 +1,12 @@
 import express from "express";
 import mainRouter from "./routes/main.route.js";
 import dotenv from "dotenv";
-import transcribeAudio from "./transcribe.js";
+// import transcribeAudio from "./transcribe.js";
 import fs from "fs";
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
+import { assemblyTranscribe } from "./assemblytranscribe.js";
 dotenv.config();
 const app = express();
 
@@ -32,10 +33,17 @@ io.on("connection", (socket) => {
   socket.on("stop-audio-stream", async (data) => {
     const audioBuffer = Buffer.concat(audioChunks);
     fs.writeFileSync("temp_audio.wav", audioBuffer);
-    const transcript = await transcribeAudio(
+    //assembly transcribe
+    const transcript = await assemblyTranscribe(
       "temp_audio.wav",
       data.language || "en"
     );
+
+    //gpt transcribe
+    // const transcript = await transcribeAudio(
+    //   "temp_audio.wav",
+    //   data.language || "en"
+    // );
     socket.emit("transcript-result", transcript);
     audioChunks = []; // reset for next recording
     fs.unlinkSync("temp_audio.wav"); // Clean up the temporary file
